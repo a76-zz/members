@@ -1,0 +1,18 @@
+<section id='members'>
+  <header id='header'>
+    <h1>members</h1>
+  </header>
+
+  <section id='main'>
+    {{outlet}}
+  </section>
+
+  <footer id='footer'>
+    
+  </footer>
+</section>
+
+<footer id='info'>
+  <p>Double-click to edit member</p>
+  {{#link-to 'members' (query-params page="2")}}2{{/link-to}}
+</footer>
