@@ -41,6 +41,10 @@ module.exports = function(server) {
             id: "3",
             firstName: 'Andrei',
             lastName: 'Tamelo'
+          }, {
+            id: "4",
+            firstName: "Pavel",
+            lastName: "Labovich"
           } 
         ]
       };

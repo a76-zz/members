@@ -8,11 +8,16 @@
   </section>
 
   <footer id='footer'>
-    
   </footer>
 </section>
 
 <footer id='info'>
-  <p>Double-click to edit member</p>
+  <p>Filter By:</p>
+  {{input type="text" value=firstName action="filter" placeholder="First Name"}}
+  {{input type="text" value=lastName action="filter" placeholder="Last Name"}}
+  <p>Pages:</p>
+  {{#link-to 'members' (query-params page="1")}}1{{/link-to}}
   {{#link-to 'members' (query-params page="2")}}2{{/link-to}}
+  <p>Page Size:</p>
+  {{input type="text" value=pageSize action="filter"}}
 </footer>

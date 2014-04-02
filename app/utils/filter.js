@@ -7,7 +7,7 @@ var include = function (filter, current) {
         if (filter.hasOwnProperty(prop)) {
             filter_value = filter[prop];
 
-            if (filter_value !== undefined && filter_value !== null) {
+            if (filter_value !== undefined && filter_value !== null && filter_value !== "null") {
 
                 current_value = current[prop];
 

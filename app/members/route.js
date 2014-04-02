@@ -4,6 +4,9 @@ export default Ember.Route.extend({
     firstName: {
       refreshModel: true
     },
+    lastName: {
+      refreshModel: true
+    },
     page: {
       refreshModel: true
     },
