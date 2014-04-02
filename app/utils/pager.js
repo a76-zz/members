@@ -1,14 +1,14 @@
 export default {
-  getCount: function(count, pageSize) {
+  getCount: function(pageSize, count) {
     var remainder = count % pageSize,
         whole = (count - remainder) / pageSize;
 
     return remainder > 0 ? whole + 1 : whole;
   },
-  getRange: function(count, pageSize, page) {
+  getRange: function(pageSize, page, count) {
     var to = page * pageSize;
 
-    if (count !== undefined) {
+    if (count) {
       to = Math.min(to, count);
     }
 

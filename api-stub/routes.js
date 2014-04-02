@@ -25,5 +25,27 @@ module.exports = function(server) {
 
       res.send(post);
     });
+
+    server.get('/members', function(req, res) {
+      var post = {
+        "members": [
+          {
+            id: "1",
+            firstName: 'Andrei',
+            lastName: 'Tarkovski'
+          }, {
+            id: "2",
+            firstName: 'Andrei',
+            lastName: 'Silchankau'
+          }, {
+            id: "3",
+            firstName: 'Andrei',
+            lastName: 'Tamelo'
+          } 
+        ]
+      };
+
+      res.send(post);
+    })
   });
 };
