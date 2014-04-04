@@ -17,5 +17,8 @@ export default Ember.ArrayController.extend({
       this.page = page;
       this.transitionToRoute();
     }
-  } 
+  },
+  meta: function () {
+    return this.store.metadataFor('member');
+  } .property('model')
 });
