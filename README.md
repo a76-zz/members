@@ -58,8 +58,7 @@ $ sudo etc/init.d/yaws stop
 import { test, moduleFor } from 'ember-qunit';
 import Store from 'appkit/utils/store';
 import Member from 'appkit/models/member';
-
-//moduleFor('store:smart');
+import Adapter from 'appkit/adapters/application';
 
 test("Smart Query", function() {
   var store = Store.create({
@@ -67,19 +66,11 @@ test("Smart Query", function() {
   });
 
   this.container.register('model:member', Member);
-  /*equal(this.container, null);*/
-  /*var store = Store.create({
-    container: moduleFor('route:index')
-  });*/
-
-  //var member = moduleForModel('member');
-
-  /*var container = isolatedContainer([
-    'route:index'
-  ]);*/
+  this.container.register('adapter:member', Adapter);
+  
 
   store.smartQuery('member', {}).then(function(value) {
-    equal(value[0], 2);
+    equal(value[0], 1);
   });
 });
 
@@ -90,19 +81,15 @@ export default DS.Store.extend({
   smartQuery: function(type, query) {
     type = this.modelFor(type);
 
-    /*var array = this.recordArrayManager
-      .createAdapterPopulatedRecordArray(type, query);*/
-    var array = [];
-    var adapter = {}; //this.adapterFor(type);
+    var array = this.recordArrayManager
+      .createAdapterPopulatedRecordArray(type, query);
+   
+    var adapter = this.adapterFor(type);
 
     Ember.assert("You tried to load a query but you have no adapter (for " + type + ")", adapter);
-    //Ember.assert("You tried to load a query but your adapter does not implement `findQuery`", adapter.findQuery);
-
-    //return promiseArray[1, 2];
+    Ember.assert("You tried to load a query but your adapter does not implement `findQuery`", adapter.findQuery);
 
     return promiseArray(_smartQuery(adapter, this, type, query, array));
-
-    //return promiseArray(_smartQuery(adapter, this, type, query, array));
   }
 });
 
