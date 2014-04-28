@@ -7,8 +7,7 @@ var App = Ember.Application.extend({
   LOG_TRANSITIONS_INTERNAL: true,
   LOG_VIEW_LOOKUPS: true,
   modulePrefix: 'appkit', // TODO: loaded via config
-  Resolver: Resolver['default'],
-  Store: DS.Store.extend({my_store: true})
+  Resolver: Resolver['default']
 });
 
 export default App;

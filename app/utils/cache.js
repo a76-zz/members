@@ -14,7 +14,7 @@ var buffer = {},
         range,
         found = false;
     
-    if (this.map[key]) {
+    if (map[key]) {
       while (index < map[key].length && !found) {
         range = map[key][index];
         found = resolver(range, point);
