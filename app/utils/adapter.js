@@ -6,7 +6,7 @@ import comparator from 'appkit/utils/comparator';
 
 var Promise = Ember.RSVP.Promise;
 
-function extractFiltering (query) {
+function extractFilter (query) {
   var notFilter = {
     page: true,
     pageSize: true,
@@ -24,42 +24,40 @@ function extractFiltering (query) {
   return result;
 }
 
-function isFilteringQuery: function(filtering, queryFiltering) {
-  var prop;
-
-  for (prop in queryFiltering) {
-    if (queryFiltering.hasOwnProperty(prop)) {
-      if (filtering[prop] !== queryFiltering[prop]) {
-        return true;
+function equals (object1, object2) {
+  var containsAll = function (source, target) {
+    for (var prop in source) {
+      if (source.hasOwnProperty(prop)) {
+        if (source[prop] !== target[prop]) {
+          return false;
+        }
       }
     }
+
+    return true;
+  };
+
+  return containsAll(object1, object2) && containsAll(object2, object1);
+}
+
+function getFilterMode(context, _filter) {
+  return context.total && cache.contains(context.key, {from: 0, to: context.total}) && comparator(context.filter, _filter) ? 2 : 0;
+} 
+
+function doFilter (context, _filter, mode) {
+  var mode = mode || getFilterMode(context, _filter),
+    data,
+    range;
+
+  if (mode === 2) {
+    context.l2filter = _filter;
+    data = cache.read_all(context.key);
+    data = filter(_filter, data);
+    data = sorter(context.sort, data);
+    return data;
   }
 
-  for (prop in filtering) {
-    if (filtering.hasOwnProperty(prop)) {
-      if (filtering[prop] !== queryFiltering[prop]) {
-        return true;
-      }
-    }
-  }
 
-  return false;
-}
-
-function getRange(key, context) {
-  return pager.getRange(context.pageSize, context.page, context.total);
-}
-
-function getTotal(mode, context) {
-  return mode === 2 ? context.l2cache.length : context.total;
-}
-
-function getFiltering(mode, context) {
-  return mode === 2 ? context.l2filtering : context.filtering
-}
-
-function getData(key, mode, context, range) {
-  return mode === 2 ? context.l2cache.slice(range.from, range.to) : cache.read_unsafe(key, range);
 }
 
 export default Ember.Object.extend({
@@ -68,38 +66,16 @@ export default Ember.Object.extend({
     var context = this.get('context');
     if (context[key] === undefined) {
       context[key] = {
-        filtering: {}
+        key: key,
+        filter: {}
       }
     }
 
     return context[key];
   },
-  getSnapshot: function(key, mode) {
-    var context = this.getContext(key),
-    range = getRange(key, context),
-    result = {
-      meta: {
-        total: getTotal(mode, context)
-      }
-    };
-
-    result[key] = getData(key, mode, context, range);
-    
-    return result;
-  },
+  
   findQuery: function(key, query) {
-
-  }
-  toPage: function(key, page) {
-    var context = this.getContext(key),
-    range;
-
-    context.page = page;
-
-    if (context.l2cache) {
-      return 
-    }
-
+    
   }
 
 });
