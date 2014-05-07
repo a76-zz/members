@@ -10,7 +10,7 @@ export default DS.Store.extend({
     Ember.assert("You tried to load a query but you have no adapter (for " + type + ")", adapter);
     Ember.assert("You tried to load a query but your adapter does not implement `findQuery`", adapter.findQuery);
 
-    return promiseArray(_filterQuery(adapter, this, type, query, array));
+    //return promiseArray(_filterQuery(adapter, this, type, query, array));
   }
 });
 
