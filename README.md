@@ -47,3 +47,66 @@ Some ideas in ember-app-kit originated in work by Yapp Labs (@yapplabs) with McG
 
 Copyright 2013 by Stefan Penner and Ember App Kit Contributors, and licensed under the MIT License. See included
 [LICENSE](/stefanpenner/ember-app-kit/blob/master/LICENSE) file for details.
+
+## Notes
+To stop yaws run:
+$ sudo etc/init.d/yaws stop
+
+
+## store-test.js:
+
+import { test, moduleFor } from 'ember-qunit';
+import Store from 'appkit/utils/store';
+import Member from 'appkit/models/member';
+import Adapter from 'appkit/adapters/application';
+
+test("Smart Query", function() {
+  var store = Store.create({
+    container: this.container
+  });
+
+  this.container.register('model:member', Member);
+  this.container.register('adapter:member', Adapter);
+  
+
+  store.smartQuery('member', {}).then(function(value) {
+    equal(value[0], 1);
+  });
+});
+
+
+## store.js:
+
+export default DS.Store.extend({
+  smartQuery: function(type, query) {
+    type = this.modelFor(type);
+
+    var array = this.recordArrayManager
+      .createAdapterPopulatedRecordArray(type, query);
+   
+    var adapter = this.adapterFor(type);
+
+    Ember.assert("You tried to load a query but you have no adapter (for " + type + ")", adapter);
+    Ember.assert("You tried to load a query but your adapter does not implement `findQuery`", adapter.findQuery);
+
+    return promiseArray(_smartQuery(adapter, this, type, query, array));
+  }
+});
+
+var Promise = Ember.RSVP.Promise;
+var PromiseArray = Ember.ArrayProxy.extend(Ember.PromiseProxyMixin);
+
+function promiseArray(promise, label) {
+  return PromiseArray.create({
+    promise: Promise.cast(promise, label)
+  });
+}
+
+function _smartQuery(adapter, store, type, query, recordArray) {
+  return new Promise(function(resolve, reject) {
+    resolve([1, 2]);
+  });
+}
+
+
+

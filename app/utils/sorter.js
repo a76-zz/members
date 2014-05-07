@@ -1,19 +1,19 @@
-var sortAsc = function (sortering, a, b) {
-  return sortering.value(a) > sortering.value(b) ? 1 : -1;
+var sortAsc = function (sort, a, b) {
+  return sort.value(a) > sort.value(b) ? 1 : -1;
 };
 
-var sortDesc = function (sortering, a, b) {
-  return sortering.value(a) < sortering.value(b) ? 1 : -1;
+var sortDesc = function (sort, a, b) {
+  return sort.value(a) < sort.value(b) ? 1 : -1;
 };
 
-export default function (sortering, data) {
-  if (sortering.asc) {
+export default function (sort, data) {
+  if (sort.asc) {
     return data.sort(function (a, b) {
-      return sortAsc(sortering, a, b);
+      return sortAsc(sort, a, b);
     });
   } else {
     return data.sort(function (a, b) {
-      return sortDesc(sortering, a, b);
+      return sortDesc(sort, a, b);
     });
   }
 } 

@@ -1,15 +1,15 @@
 export default {
-  getCount: function(pageSize, count) {
-    var remainder = count % pageSize,
-        whole = (count - remainder) / pageSize;
+  getCount: function(pageSize, total) {
+    var remainder = total % pageSize,
+        whole = (total - remainder) / pageSize;
 
     return remainder > 0 ? whole + 1 : whole;
   },
-  getRange: function(pageSize, page, count) {
+  getRange: function(pageSize, page, total) {
     var to = page * pageSize;
 
-    if (count) {
-      to = Math.min(to, count);
+    if (total) {
+      to = Math.min(to, total);
     }
 
     return { 
