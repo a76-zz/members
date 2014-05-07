@@ -9,6 +9,19 @@ test("write single element", function() {
   equal(range[0], 1);
 });
 
+test("write several elements", function() {
+   var key = "write 2", range; 
+   cache.write(key, [1], {from: 0, to: 1});
+   range = cache.readUnsafe(key, {from: 0, to: 1});
+    equal(range[0], 1);
+
+   cache.write(key, [2], {from: 0, to: 1});
+   range = cache.readUnsafe(key, {from: 0, to: 1});
+
+   equal(range[0], 2);
+
+});
+
 test("write", function() {
   var key = "write", range;
   

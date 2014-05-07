@@ -49,20 +49,24 @@ function getFilterMode (context, _filter) {
 } 
 
 function getSnapshot (context, mode) {
-  var total, range, data, result = {meta: {}};
+  var total, range, data, result = {};
 
   if (mode === 2) {
     total = context.l2cache.length;
-    range = pager.getRange(total, context.pageSize, context.page);
+    range = pager.getRange(context.pageSize, context.page, total);
     data = context.l2cache.slice(range.from, range.to);
   } else {
     total = context.total;
-    range = pager.getRange(total, context.pageSize, context.page);
+    range = pager.getRange(context.pageSize, context.page, total);
     data = cache.readUnsafe(context.key, range);
   }
-  
-  result.meta.total = total;
-  result.meta.mode = mode;
+
+  result.meta = {
+    total: total,
+    mode: mode,
+    range: range,
+    filter: context.filter
+  };
 
   result[context.key] = data;
   return result;
@@ -70,10 +74,15 @@ function getSnapshot (context, mode) {
 
 export default Ember.Object.extend({
   context: {},
+  getCache: function () {
+    return cache;
+  },
   createContext: function (key) {
+    var capacity = this.get('defaultCapacity');
     return {
       key: key,
       filter: {},
+      capacity: capacity,
       sort: {
         key: null,
         asc: true,
@@ -99,8 +108,12 @@ export default Ember.Object.extend({
         key: query.sortBy,
         asc: query.sortAsc
       },
-      data,
-      promise,
+      saveContext = function (context) {
+        context.sort.key = sort.key;
+        context.sort.asc = sort.asc;
+        context.page = query.page;
+        context.pageSize = query.pageSize;  
+      },
       doQueryInternal = function (mode, filterOperator) {
         var data;
         if (context.l2cache) {
@@ -113,8 +126,7 @@ export default Ember.Object.extend({
           data = filterOperator(_filter, data);
         } 
 
-        context.sort.key = sort.key;
-        context.sort.asc = sort.asc;  
+        saveContext(context);
 
         context.l2cache = sorter(context.sort, data);
         return new Promise(function(resolve, reject) {
@@ -140,19 +152,21 @@ export default Ember.Object.extend({
       } 
     }
 
+    saveContext(context);
+    context.filter = _filter;
+
     range = cache.coverage(context.key, range, context.capacity, context.total);
-    promise = findQueryExecutor(key, {
+
+    return findQueryExecutor(key, {
       filter: _filter,
       sort: sort,
       range: range
-    });
-
-    return Promise.cast(promise, "").then(function(response) {
-      context.total = response.meta.total;
-      cache.write(key, response[key], response.meta.range);
-      return new Promise(function (resolve, reject) {
-        resolve(getSnapshot(context, mode));
-      });
+    }).then(function(response) {
+      //return new Promise(function (resolve, reject) {
+        context.total = response.meta.total;
+        cache.write(key, response[key], response.meta.range);
+        return getSnapshot(context, mode);
+      //});
     });
   }
 
