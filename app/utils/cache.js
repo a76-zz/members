@@ -154,5 +154,9 @@ export default {
       result.data = this.readUnsafe(key, range);
     }
     return result;
+  },
+  reset: function (key) {
+    buffer[key] = [];
+    map[key] = [];
   }
 };

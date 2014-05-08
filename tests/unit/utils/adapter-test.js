@@ -100,13 +100,4 @@ asyncTest("adapter several asc", function() {
   });
 });
 
-/*test("adapter state", function() {
-  var cache = adapter.getCache();
-  var member = cache.readAll('member');
-
-  equal(member[0].firstName, 'a');
-
-  equal(member.length, 1);
-});*/
-
 

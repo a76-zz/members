@@ -149,7 +149,10 @@ export default Ember.Object.extend({
     } else {
       if (mode === 2) {
         return doQueryInternal(2, filter);
-      } 
+      } else {
+        context.total = undefined;
+        cache.reset(key);
+      }
     }
 
     saveContext(context);
