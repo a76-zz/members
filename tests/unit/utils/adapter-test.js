@@ -8,7 +8,8 @@ var mock = Mock.create({
       {firstName: 'b', lastName: 'c'},
       {firstName: 'c', lastName: 'd'},
       {firstName: 'q', lastName: 'a'},
-      {firstName: 'q', lastName: 'e'}
+      {firstName: 'q', lastName: 'b'},
+      {firstName: 'q', lastName: 'c'}
     ]
   }
 });
@@ -49,12 +50,12 @@ asyncTest("mock sort desc", function() {
   }).then(function(response) {
     start();
     equal(response.member[0].firstName, 'q');
-    equal(response.meta.total, 5);
+    equal(response.meta.total, 6);
     equal(response.member.length, 1);
   });
 });
 
-asyncTest("adapter single asc", function() {
+asyncTest("adapter single", function() {
   adapter.findQuery('member', {
     firstName: 'a',
     page: 1,
@@ -77,12 +78,37 @@ asyncTest("adapter single asc", function() {
   });
 });
 
-asyncTest("adapter several asc", function() {
+asyncTest("adapter several", function() {
   adapter.findQuery('member', {
     firstName: 'q',
     page: 1,
     pageSize: 1,
-    sortBy: 'firstName',
+    sortBy: 'lastName',
+    sortAsc: true
+  }, function(key, query) { 
+    return mock.findQuery(key, query);
+  }).then(function(response) {
+    start();
+
+    equal(response.meta.filter.firstName, 'q');
+
+    equal(response.member[0].firstName, 'q');
+    equal(response.member[0].lastName, 'a');
+
+    equal(response.meta.range.from, 0);
+    equal(response.meta.range.to, 1);
+    equal(response.meta.total, 3);
+    equal(response.meta.mode, 0);
+    equal(response.member.length, 1);
+  });
+});
+
+asyncTest("adapter several next page", function() {
+  adapter.findQuery('member', {
+    firstName: 'q',
+    page: 2,
+    pageSize: 1,
+    sortBy: 'lastName',
     sortAsc: true
   }, function(key, query) { 
     return mock.findQuery(key, query);
@@ -91,13 +117,91 @@ asyncTest("adapter several asc", function() {
 
     equal(response.meta.filter.firstName, 'q');
     equal(response.member[0].firstName, 'q');
+    equal(response.member[0].lastName, 'b');
 
-    equal(response.meta.range.from, 0);
-    equal(response.meta.range.to, 1);
-    equal(response.meta.total, 2);
+    equal(response.meta.range.from, 1);
+    equal(response.meta.range.to, 2);
+    equal(response.meta.total, 3);
+    equal(response.meta.mode, 1);
+    equal(response.member.length, 1);
+  });
+});
+
+asyncTest("adapter several third page", function() {
+  adapter.findQuery('member', {
+    firstName: 'q',
+    page: 3,
+    pageSize: 1,
+    sortBy: 'lastName',
+    sortAsc: true
+  }, function(key, query) { 
+    return mock.findQuery(key, query);
+  }).then(function(response) {
+    start();
+
+    equal(response.meta.filter.firstName, 'q');
+    equal(response.member[0].firstName, 'q');
+    equal(response.member[0].lastName, 'c');
+
+    equal(response.meta.range.from, 2);
+    equal(response.meta.range.to, 3);
+    equal(response.meta.total, 3);
     equal(response.meta.mode, 0);
     equal(response.member.length, 1);
   });
 });
+
+asyncTest("adapter several whole cache sort", function() {
+  adapter.findQuery('member', {
+    firstName: 'q',
+    page: 1,
+    pageSize: 1,
+    sortBy: 'lastName',
+    sortAsc: false
+  }, function(key, query) { 
+    return mock.findQuery(key, query);
+  }).then(function(response) {
+    start();
+
+    equal(response.meta.filter.firstName, 'q');
+    equal(response.member[0].firstName, 'q');
+    equal(response.member[0].lastName, 'c');
+
+    equal(response.meta.range.from, 0);
+    equal(response.meta.range.to, 1);
+    equal(response.meta.total, 3);
+    equal(response.meta.mode, 1);
+    equal(response.member.length, 1);
+  });
+});
+
+asyncTest("adapter several l2 filtering", function() {
+  adapter.findQuery('member', {
+    firstName: 'q',
+    lastName: 'a',
+    page: 1,
+    pageSize: 1,
+    sortBy: 'lastName',
+    sortAsc: false
+  }, function(key, query) { 
+    return mock.findQuery(key, query);
+  }).then(function(response) {
+    start();
+
+    equal(response.meta.filter.firstName, 'q');
+    equal(response.member[0].firstName, 'q');
+    equal(response.member[0].lastName, 'a');
+
+    equal(response.meta.range.from, 0);
+    equal(response.meta.range.to, 1);
+    equal(response.meta.total, 1);
+    equal(response.meta.mode, 2);
+    equal(response.member.length, 1);
+  });
+});
+
+
+
+
 
 

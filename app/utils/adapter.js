@@ -74,69 +74,65 @@ function getSnapshot (context, mode) {
 
 export default Ember.Object.extend({
   context: {},
-  getCache: function () {
-    return cache;
-  },
-  createContext: function (key) {
-    var capacity = this.get('defaultCapacity');
-    return {
-      key: key,
-      filter: {},
-      capacity: capacity,
-      sort: {
-        key: null,
-        asc: true,
-        value: function (current) {
-          return current[this.key];
-        }
-      }
-    };
-  },
-  getContext: function(key) {
-    var context = this.get('context');
-    if (context[key] === undefined) {
-      context[key] = this.createContext(key);
-    }
-    return context[key];
-  },
   findQuery: function(key, query, findQueryExecutor) {
-    var _filter = extractFilter(query),
-      context = this.getContext(key),
-      mode = getFilterMode(context, _filter),
-      range = pager.getRange(query.pageSize, query.page, context.total),
-      sort = {
-        key: query.sortBy,
-        asc: query.sortAsc
-      },
-      saveContext = function (context) {
-        context.sort.key = sort.key;
-        context.sort.asc = sort.asc;
-        context.page = query.page;
-        context.pageSize = query.pageSize;  
-      },
-      doQueryInternal = function (mode, filterOperator) {
-        var data;
-        if (context.l2cache) {
-          data = context.l2cache;
-        } else {
-          data = cache.readAll(context.key);
-        } 
+    var getContext = function(that, key) {
+          var context = that.get('context'),
+            createContext = function (key) {
+              var capacity = that.get('defaultCapacity');
+              return {
+                key: key,
+                filter: {},
+                capacity: capacity,
+                sort: {
+                  key: null,
+                  asc: true,
+                  value: function (current) {
+                    return current[this.key];
+                  }
+                }
+              };
+            };
 
-        if (filterOperator) {
-          data = filterOperator(_filter, data);
-        } 
+          if (context[key] === undefined) {
+            context[key] = createContext(key);
+          }
+          return context[key];
+        },
+        saveContext = function (context) {
+          context.sortBy = query.sortBy;
+          context.sortAsc = query.sortAsc;
+          context.page = query.page;
+          context.pageSize = query.pageSize;  
+        },
+        doQueryInternal = function (mode, filterOperator) {
+          var data;
+          if (context.l2cache) {
+            data = context.l2cache;
+          } else {
+            data = cache.readAll(context.key);
+          } 
 
-        saveContext(context);
+          if (filterOperator) {
+            data = filterOperator(_filter, data);
+          } 
 
-        context.l2cache = sorter(context.sort, data);
-        return new Promise(function(resolve, reject) {
-          resolve(getSnapshot(context, mode));
-        });
-      };
+          saveContext(context);
+
+          context.l2cache = sorter(context.sort, data);
+          return new Promise(function(resolve, reject) {
+            resolve(getSnapshot(context, mode));
+          });
+        },
+        _filter = extractFilter(query),
+        context = getContext(this, key),
+        mode = getFilterMode(context, _filter),
+        range = pager.getRange(query.pageSize, query.page, context.total);
+
 
     if (equals(context.filter, _filter)) {
-      if (equals({key: context.sort.key, asc: context.sort.asc}, sort)) {
+      if (context.sortBy === query.sortBy && context.sortAsc === query.sortAsc) {
         if (cache.contains(key, range)) {
+          saveContext(context);
           return new Promise(function(resolve, reject) {
             resolve(getSnapshot(context, 1));
           });
@@ -155,21 +151,21 @@ export default Ember.Object.extend({
       }
     }
 
-    saveContext(context);
     context.filter = _filter;
-
+    saveContext(context);
     range = cache.coverage(context.key, range, context.capacity, context.total);
 
     return findQueryExecutor(key, {
       filter: _filter,
-      sort: sort,
+      sort: {
+        key: query.sortBy,
+        asc: query.sortAsc
+      },
       range: range
     }).then(function(response) {
-      //return new Promise(function (resolve, reject) {
-        context.total = response.meta.total;
-        cache.write(key, response[key], response.meta.range);
-        return getSnapshot(context, mode);
-      //});
+      context.total = response.meta.total;
+      cache.write(key, response[key], response.meta.range);
+      return getSnapshot(context, mode);
     });
   }
 
